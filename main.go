@@ -59,7 +59,7 @@ func main() {
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("Hello, World!")
 	})
-	app.Post("/addbook", func(ctx *fiber.Ctx) error {
+	app.Post("/book", func(ctx *fiber.Ctx) error {
 		CB := new(createbook)
 		if err := ctx.BodyParser(CB); err != nil {
 			return err
@@ -74,22 +74,22 @@ func main() {
 		}
 		return nil
 	})
-	app.Get("/shop", func(ctx *fiber.Ctx) error {
+	app.Get("/book", func(ctx *fiber.Ctx) error {
 		var books []book //books me s has empty ระบุไทป์ เป็น book array
-		db.Find(&books)
-
+		shop := db.Find(&books)
+		if shop.Error != nil {
+			log.Fatal(shop)
+		}
 		return ctx.JSON(books)
 
 	})
-	app.Put("/editbook/:id", func(ctx *fiber.Ctx) error {
+	app.Put("/book/:id", func(ctx *fiber.Ctx) error {
 		id := ctx.Params("id")
 		var EditBook book
 		if err := db.First(&EditBook, id).Error; err != nil {
 			return ctx.Status(fiber.StatusNotFound).SendString("Book not found")
 		}
-		if err := db.Model(&EditBook).Updates(book{Name: "hello", Price: 18, Category: "anime"}).Error; err != nil {
-			return errS
-		}
+
 		CBE := new(createbook)
 		if err := ctx.BodyParser(CBE); err != nil {
 			return ctx.Status(fiber.StatusBadRequest).SendString("invalid json")
@@ -102,7 +102,7 @@ func main() {
 		}
 		return ctx.Status(fiber.StatusOK).SendString("Edit book suscess!")
 	})
-	app.Delete("delete/:id", func(ctx *fiber.Ctx) error {
+	app.Delete("/book/:id", func(ctx *fiber.Ctx) error {
 		id := ctx.Params("id")
 		var DelateBook book
 		if err := db.First(&DelateBook, id).Error; err != nil {
