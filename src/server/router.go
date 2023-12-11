@@ -48,61 +48,81 @@ func (f FiberServer) Start() {
 
 func (f FiberServer) SetupRouteHttp(base fiber.Router) {
 	base.Get("/book", f.GetAllBooks)
-	base.Put("/book/:id", func(ctx *fiber.Ctx) error {
-		// id := ctx.Params("id")
-		// var EditBook services.Book
-		// if err := db.First(&EditBook, id).Error; err != nil {
-		// 	return ctx.Status(fiber.StatusNotFound).SendString("Book not found")
-		// }
+	base.Get("/book/:id", f.GetOneBooks)
+	base.Put("/book/:id", f.EditBook)
+	base.Delete("/book/:id", f.DeleteBooks)
+	base.Post("/book", f.CreateBooks)
 
-		// CBE := new(createbook)
-		// if err := ctx.BodyParser(CBE); err != nil {
-		// 	return ctx.Status(fiber.StatusBadRequest).SendString("invalid json")
-		// }
-		// EditBook.Name = CBE.BookName
-		// EditBook.Price = CBE.BookPrice
-		// EditBook.Category = CBE.BookCategory
-		// if err := db.Save(&EditBook).Error; err != nil { //ถ้าไม่เท่ากับ nil ก็จะไม่รีเทิร์น
-		// 	return ctx.Status(fiber.StatusInternalServerError).SendString("Failed to update book")
-		// }
-		return ctx.Status(fiber.StatusOK).SendString("Edit book suscess!")
-	})
-	base.Delete("/book/:id", func(ctx *fiber.Ctx) error {
-		// id := ctx.Params("id")
-		// var DelateBook services.Book
-		// if err := db.First(&DelateBook, id).Error; err != nil {
-		// 	return ctx.Status(fiber.StatusNotFound).SendString("Book not found")
-		// }
-		// if err := db.Delete(&DelateBook).Error; err != nil {
-		// 	return ctx.Status(fiber.StatusBadRequest).SendString("Can't Delete data")
-		// }
-		return ctx.Status(fiber.StatusOK).SendString("Book delete sucessfully")
-	})
-	base.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World!")
-	})
-	base.Post("/book", func(ctx *fiber.Ctx) error {
-		// CB := new(createbook)
-		// if err := ctx.BodyParser(CB); err != nil {
-		// 	return err
-		// }
-		// err := db.Model(&services.Book{}).Create(&services.Book{
-		// 	Name:     CB.BookName,
-		// 	Price:    CB.BookPrice,
-		// 	Category: CB.BookCategory,
-		// }).Error
-		// if err != nil {
-		// 	log.Fatal("Error naja", err)
-		// }
-		return nil
-	})
 }
 
 func (f FiberServer) GetAllBooks(ctx *fiber.Ctx) error {
+	//var books []services.Book //books me s has empty ระบุไทป์ เป็น book array
+	shop, err := f.bookPg.GetAll()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return ctx.Status(200).JSON(shop)
+}
+func (f FiberServer) EditBooks(ctx *fiber.Ctx) error {
 	var books []services.Book //books me s has empty ระบุไทป์ เป็น book array
 	shop, err := f.bookPg.GetAll()
 	if err != nil {
 		log.Fatal(shop)
 	}
-	return ctx.JSON(books)
+	return ctx.Status(200).JSON(books)
+}
+func (f FiberServer) DeleteBooks(ctx *fiber.Ctx) error {
+	id := ctx.Params("id")
+	err := f.bookPg.Delete(id)
+	if err != nil {
+		log.Fatal(err)
+	}
+	//books me s has empty ระบุไทป์ เป็น book array
+
+	return ctx.Status(204).JSON(fiber.Map{})
+}
+
+func (f FiberServer) CreateBooks(ctx *fiber.Ctx) error {
+	CB := new(createbook)
+	if err := ctx.BodyParser(CB); err != nil {
+		return err
+	}
+	newBook := &services.Book{
+		Name:     CB.BookName,
+		Price:    CB.BookPrice,
+		Category: CB.BookCategory,
+	}
+	if err := f.bookPg.Post(newBook); err != nil {
+		log.Fatal(err)
+	}
+	return ctx.Status(201).JSON(CB)
+}
+func (f FiberServer) EditBook(ctx *fiber.Ctx) error {
+
+	CEB := new(createbook)
+	if err := ctx.BodyParser(CEB); err != nil {
+		return err
+	}
+	bookid := ctx.Params("id")
+
+	EditfindBook := &services.Book{
+		Name:     CEB.BookName,
+		Price:    CEB.BookPrice,
+		Category: CEB.BookCategory,
+	}
+	if err := f.bookPg.Put(bookid, EditfindBook); err != nil {
+		log.Fatal(err)
+
+	}
+
+	return ctx.Status(200).JSON(CEB)
+}
+func (f FiberServer) GetOneBooks(ctx *fiber.Ctx) error {
+	id := ctx.Params("id")
+	book, err := f.bookPg.GetOne(id)
+	if err != nil {
+		//log.Fatal(err)
+		return ctx.Status(404).JSON(fiber.Map{"error": "Error 404 "})
+	}
+	return ctx.Status(200).JSON(book)
 }
