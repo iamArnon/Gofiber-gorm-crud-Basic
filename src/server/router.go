@@ -1,11 +1,10 @@
 package server
 
 import (
-	"log"
-
 	"Bookshop/src/services"
 
 	"github.com/gofiber/fiber/v2"
+	"log"
 )
 
 type FiberServer struct {
