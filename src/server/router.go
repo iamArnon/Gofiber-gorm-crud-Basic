@@ -3,8 +3,10 @@ package server
 import (
 	"Bookshop/src/services"
 
-	"github.com/gofiber/fiber/v2"
 	"log"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
 type FiberServer struct {
@@ -26,6 +28,14 @@ type createbook struct {
 
 func New(sc *ServerConfig, db services.GormPg) *FiberServer {
 	app := fiber.New()
+
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:     "*",
+		AllowHeaders:     "*",
+		AllowMethods:     "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+		AllowCredentials: true,
+	}))
+
 	f := &FiberServer{
 		app,
 		sc,

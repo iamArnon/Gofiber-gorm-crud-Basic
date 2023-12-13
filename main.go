@@ -4,13 +4,14 @@ import (
 	"Bookshop/src/server"
 	"Bookshop/src/services"
 	"fmt"
+
 	"github.com/caarlos0/env/v6"
-	_ "github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
+
+	"log"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"log"
 )
 
 type config struct {
@@ -37,15 +38,7 @@ func initFiberServer(cfg config, db services.GormPg) {
 		AppVersion:    cfg.AppVersion,
 		ListenAddress: fmt.Sprintf(":%s", cfg.Port),
 	}, db)
-	//var corsMiddleware = cors.New(cors.Config{
-	//	AllowOrigins:     "*", // เปลี่ยนเป็นโดเมนเฉพาะหากจำเป็น
-	//	AllowMethods:     "GET, HEAD, POST, PUT, DELETE, OPTIONS",
-	//	AllowHeaders:     "*",
-	//	AllowCredentials: true, // เปลี่ยนเป็น header เฉพาะหากจำเป็น
-	//})
 
-	// ใช้ CORS middleware ก่อนให้บริการคำขอ
-	//fiberSv.Use(corsMiddleware)
 	fiberSv.Start()
 }
 func initEnvironment() config {
